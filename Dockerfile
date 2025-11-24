@@ -1,38 +1,48 @@
 # ---- Base image ----
 FROM node:18-alpine AS base
 
-# Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Copy package files first (for dependency caching)
+# ---- Build arguments for build-time env variables ----
+ARG NEXT_PUBLIC_CONVEX_URL
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_STREAM_API_KEY
+
+# ---- Set environment variables for Next.js build ----
+ENV NEXT_PUBLIC_CONVEX_URL=$NEXT_PUBLIC_CONVEX_URL
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_STREAM_API_KEY=$NEXT_PUBLIC_STREAM_API_KEY
+
+# ---- Copy package files first (for caching dependencies) ----
 COPY package*.json ./
 
-# Install dependencies
+# ---- Install dependencies ----
 RUN npm install
 
-# Copy the rest of the project
+# ---- Copy the rest of the app ----
 COPY . .
 
-# Build Next.js app (frontend + backend)
+# ---- Build Next.js app ----
 RUN npm run build
 
 # ---- Production image ----
-FROM node:18-alpine AS runner
+FROM node:18-alpine AS prod
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV PORT=3000
+# Copy only production dependencies
+COPY package*.json ./
+RUN npm install --production
 
-# Copy only necessary files from builder
-COPY --from=base /app/package*.json ./
-COPY --from=base /app/node_modules ./node_modules
+# Copy built Next.js app from builder
 COPY --from=base /app/.next ./.next
 COPY --from=base /app/public ./public
-COPY --from=base /app/next.config.mjs ./next.config.mjs
+# COPY --from=base /app/next.config.js ./   <-- REMOVED because file not present
+COPY --from=base /app/node_modules ./node_modules
 
 # Expose port
 EXPOSE 3000
 
-# Start Next.js server (runs frontend + backend APIs)
+# Start the app
 CMD ["npm", "start"]

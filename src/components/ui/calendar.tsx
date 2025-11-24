@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import { DayPicker, type DayPickerProps } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -60,11 +60,15 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
+        // Custom button for day cells (if you want to customize navigation, use 'IconLeft' and 'IconRight' props instead)
+        Button: ({
+          className,
+          ...props
+        }: {
+          className?: string
+          [key: string]: any
+        }) => (
+          <button className={cn(buttonVariants({ variant: "ghost" }), "h-8 w-8 p-0 font-normal", className)} {...props} />
         ),
       }}
       {...props}

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interviewhub-deployment
+  labels:
+    app: interviewhub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: interviewhub
+  template:
+    metadata:
+      labels:
+        app: interviewhub
+    spec:
+      containers:
+        - name: interviewhub-container
+          image: interviewhub-app:latest     # <--- your docker image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000            # Next.js app runs on 3000
+          envFrom:
+            - secretRef:
+                name: interviewhub-secret    # If you need environment variables
+            - configMapRef:
+                name: interviewhub-config

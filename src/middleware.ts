@@ -1,11 +1,13 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
+// ✅ Initialize Clerk middleware
 export default clerkMiddleware();
 
+// ✅ Add config to ensure Clerk runs on correct routes
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Run Clerk on ALL routes except Next.js internals and static files
+    '/((?!_next|.*\\..*).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

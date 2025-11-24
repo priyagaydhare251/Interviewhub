@@ -1,7 +1,24 @@
+# dependencies
 node_modules
+npm-debug.log
+
+# Next.js build cache
 .next
+.next/cache
+
+# environment files (you will pass these with --env-file instead)
+.env.local
+.env.development
+.env.production
+
+# Docker files
 Dockerfile
 docker-compose.yml
 .dockerignore
-npm-debug.log
-# .env.local
+
+# Git
+.git
+.gitignore
+
+# Docs & misc
+*.md
