@@ -258,18 +258,21 @@ spec:
 
 
         stage('SonarQube Analysis') {
-            steps {
-                container('sonar-scanner') {
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=2401054-priya \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                            -Dsonar.login=sqp_d9a74070eb1f0b7dc9a5480ef49108e99397e4ab
-                    '''
-                }
+    steps {
+        container('sonar-scanner') {
+            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                sh '''
+                    sonar-scanner \
+                        -Dsonar.projectKey=2401054-priya \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                        -Dsonar.token=$SONAR_TOKEN
+                '''
             }
         }
+    }
+}
+
 
         stage('Login to Nexus Registry') {
             steps {
