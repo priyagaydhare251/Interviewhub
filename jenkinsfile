@@ -265,7 +265,7 @@ spec:
                             -Dsonar.projectKey=2401054-priya \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                            -Dsonar.login=sqp_a8990f60950d6fcc68e4b7f8e81404d59dcb9826
+                            -Dsonar.login=sqp_d9a74070eb1f0b7dc9a5480ef49108e99397e4ab
                     '''
                 }
             }
