@@ -164,8 +164,6 @@
 
 
 
-
-
 pipeline {
     agent {
         kubernetes {
@@ -233,46 +231,41 @@ spec:
                     sh '''
                         echo "Installing dependencies..."
                         npm install
-                        echo "Next.js local build for testing..."
+                        echo "Running local Next.js build..."
                         npm run build
                     '''
                 }
             }
         }
 
-        // 
         stage('Build Docker Image') {
             steps {
                 container('dind') {
                     sh '''
                         sleep 10
                         docker build \
-                        --build-arg NEXT_PUBLIC_CONVEX_URL="https://flippant-goshawk-377.convex.cloud" \
-                        --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dml0YWwtbXVkZmlzaC02LmNsZXJrLmFjY291bnRzLmRldiQ" \
-                        --build-arg NEXT_PUBLIC_STREAM_API_KEY="muytsbs2rpay" \
-                        -t interviewhub-app:latest .
+                            --build-arg NEXT_PUBLIC_CONVEX_URL="https://flippant-goshawk-377.convex.cloud" \
+                            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dml0YWwtbXVkZmlzaC02LmNsZXJrLmFjY291bnRzLmRldiQ" \
+                            --build-arg NEXT_PUBLIC_STREAM_API_KEY="muytsbs2rpay" \
+                            -t interviewhub-app:latest .
                     '''
                 }
             }
         }
 
-
         stage('SonarQube Analysis') {
-    steps {
-        container('sonar-scanner') {
-            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                sh '''
-                    sonar-scanner \
-                        -Dsonar.projectKey=2401054-priya \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                        -Dsonar.token=sqp_0470764abf7a6697c3b2dcf29897fdf534b80492
-                '''
+            steps {
+                container('sonar-scanner') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            sonar-scanner \
+                                -Dsonar.token=$SONAR_TOKEN \
+                                -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
 
         stage('Login to Nexus Registry') {
             steps {
@@ -295,8 +288,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag interviewhub-app:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                        docker tag interviewhub-app:latest \
+                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+
+                        docker push \
+                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
                     '''
                 }
             }
@@ -327,7 +323,3 @@ spec:
         }
     }
 }
-
-
-
-
