@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: interviewhub-deployment
+  namespace: 2401054               # <--- Added Namespace
   labels:
     app: interviewhub
 spec:
@@ -16,12 +17,21 @@ spec:
     spec:
       containers:
         - name: interviewhub-container
-          image: interviewhub-app:latest     # <--- your docker image
+          image: interviewhub-app:latest     # <--- Your Docker image
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 3000            # Next.js app runs on 3000
+            - name: http
+              containerPort: 3000            # Next.js default port
           envFrom:
             - secretRef:
-                name: interviewhub-secret    # If you need environment variables
+                name: interviewhub-secret    # <--- Secret (optional)
             - configMapRef:
-                name: interviewhub-config
+                name: interviewhub-config    # <--- ConfigMap (optional)
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+      restartPolicy: Always

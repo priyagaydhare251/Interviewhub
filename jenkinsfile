@@ -162,8 +162,6 @@
 
 
 
-
-
 pipeline {
     agent {
         kubernetes {
@@ -200,7 +198,7 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"]
+    args: ["--storage-driver=overlay2"]
     securityContext:
       privileged: true
     env:
@@ -229,9 +227,7 @@ spec:
             steps {
                 container('node') {
                     sh '''
-                        echo "Installing dependencies..."
                         npm install
-                        echo "Running local Next.js build..."
                         npm run build
                     '''
                 }
@@ -298,25 +294,51 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        /* --------------------------------------------------------------- */
+        /* ------------------ UPDATED STAGES FOR YOU ---------------------- */
+        /* --------------------------------------------------------------- */
+
+        stage('Create Namespace') {
             steps {
                 container('kubectl') {
                     sh '''
-                        set -x
-                        kubectl apply -f k8s/deployment.yaml -n 2401054
-                        kubectl apply -f k8s/service.yaml -n 2401054
-                        kubectl rollout status deployment/interviewhub-deployment -n 2401054
+                        echo "Ensuring namespace 2401054 exists..."
+                        kubectl get namespace 2401054 || kubectl create namespace 2401054
                     '''
                 }
             }
         }
 
-        stage('Debug Pods') {
+        stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
                     sh '''
-                        kubectl get pods -n 2401054
-                        kubectl describe pods -n 2401054 | head -n 200
+                        echo "Deploying to Kubernetes Namespace: 2401054"
+
+                        kubectl apply -f k8s/deployment.yaml -n 2401054
+                        kubectl apply -f k8s/service.yaml -n 2401054
+
+                        echo "Resources in namespace 2401054:"
+                        kubectl get all -n 2401054
+                    '''
+                }
+            }
+        }
+
+        stage('Show Cluster Nodes & Service Info') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "===== Kubernetes Nodes ====="
+                        kubectl get nodes -o wide
+
+                        echo ""
+                        echo "===== Services in namespace 2401054 ====="
+                        kubectl get svc -n 2401054
+
+                        echo ""
+                        echo "If service shows NodePort, open:"
+                        echo "http://<NODE-IP>:<NODEPORT>"
                     '''
                 }
             }
