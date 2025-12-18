@@ -2,7 +2,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: interviewhub-service
-  namespace: 2401054
   labels:
     app: interviewhub
 spec:
@@ -11,6 +10,6 @@ spec:
     app: interviewhub
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: 3000
-      nodePort: 31000    # URL: http://NODE-IP:31000
+      port: 3000          # service port
+      targetPort: 3000    # container port
+      nodePort: 31000     # browser: http://localhost:31000
