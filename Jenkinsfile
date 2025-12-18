@@ -161,7 +161,6 @@
 
 
 
-
 pipeline {
     agent {
         kubernetes {
@@ -219,6 +218,8 @@ spec:
         NEXT_PUBLIC_CONVEX_URL           = "https://flippant-goshawk-377.convex.cloud"
         NEXT_PUBLIC_STREAM_API_KEY       = "muytsbs2rpay"
         NEXT_PUBLIC_DISABLE_CONVEX_PRERENDER = "true"
+
+        REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     }
 
     stages {
@@ -266,16 +267,10 @@ spec:
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'nexus-cred',
-                        usernameVariable: 'NEXUS_USER',
-                        passwordVariable: 'NEXUS_PASS'
-                    )]) {
-                        sh '''
-                            docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                                -u $NEXUS_USER -p $NEXUS_PASS
-                        '''
-                    }
+                    sh '''
+                        echo "Logging into Nexus..."
+                        docker login ${REGISTRY} -u student -p Imcc@2025
+                    '''
                 }
             }
         }
@@ -285,18 +280,14 @@ spec:
                 container('dind') {
                     sh '''
                         docker tag interviewhub-app:latest \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                            ${REGISTRY}/2401054/interviewhub:v1
 
                         docker push \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                            ${REGISTRY}/2401054/interviewhub:v1
                     '''
                 }
             }
         }
-
-        /* --------------------------------------------------------------- */
-        /* ------------------ UPDATED STAGES FOR YOU ---------------------- */
-        /* --------------------------------------------------------------- */
 
         stage('Create Namespace') {
             steps {
