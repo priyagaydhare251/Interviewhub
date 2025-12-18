@@ -272,8 +272,9 @@ spec:
                         passwordVariable: 'NEXUS_PASS'
                     )]) {
                         sh '''
-                            docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                                -u $NEXUS_USER -p $NEXUS_PASS
+                            docker login nexus-service.nexus.svc.cluster.local:8085 \
+    -u $NEXUS_USER -p $NEXUS_PASS
+
                         '''
                     }
                 }
@@ -285,10 +286,11 @@ spec:
                 container('dind') {
                     sh '''
                         docker tag interviewhub-app:latest \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+    nexus-service.nexus.svc.cluster.local:8085/my-repository/v2/2401054/interviewhub:v1
 
-                        docker push \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+docker push \
+    nexus-service.nexus.svc.cluster.local:8085/my-repository/v2/2401054/interviewhub:v1
+
                     '''
                 }
             }
