@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: interviewhub-deployment
-  namespace: 2401054               # <--- Added Namespace
+  namespace: 2401054
   labels:
     app: interviewhub
 spec:
@@ -17,16 +17,16 @@ spec:
     spec:
       containers:
         - name: interviewhub-container
-          image: interviewhub-app:latest     # <--- Your Docker image
-          imagePullPolicy: IfNotPresent
+          image: nexus-service.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+          imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 3000            # Next.js default port
+              containerPort: 3000
           envFrom:
             - secretRef:
-                name: interviewhub-secret    # <--- Secret (optional)
+                name: interviewhub-secret
             - configMapRef:
-                name: interviewhub-config    # <--- ConfigMap (optional)
+                name: interviewhub-config
           resources:
             requests:
               cpu: "100m"

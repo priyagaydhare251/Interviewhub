@@ -159,7 +159,6 @@
 
 
 
-
 pipeline {
     agent {
         kubernetes {
@@ -196,7 +195,7 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service.nexus.svc.cluster.local:8085"]
+    args: ["--storage-driver=overlay2"]
     securityContext:
       privileged: true
     env:
