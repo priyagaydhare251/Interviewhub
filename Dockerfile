@@ -1,7 +1,7 @@
 # -----------------------------
-# ---- Base Image (from Nexus instead of Docker Hub)
+# ---- Base Image (from Docker Hub)
 # -----------------------------
-FROM nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/library/node:18-alpine AS base
+FROM node:18-alpine AS base
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN npm run build
 # -----------------------------
 # ---- Production Image -------
 # -----------------------------
-FROM nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/library/node:18-alpine AS prod
+FROM node:18-alpine AS prod
 
 WORKDIR /app
 
