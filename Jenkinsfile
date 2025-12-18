@@ -160,8 +160,6 @@
 
 
 
-
-
 pipeline {
     agent {
         kubernetes {
@@ -198,7 +196,7 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2"]
+    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service.nexus.svc.cluster.local:8085"]
     securityContext:
       privileged: true
     env:
@@ -272,7 +270,7 @@ spec:
                         passwordVariable: 'NEXUS_PASS'
                     )]) {
                         sh '''
-                            docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                            docker login nexus-service.nexus.svc.cluster.local:8085 \
                                 -u $NEXUS_USER -p $NEXUS_PASS
                         '''
                     }
@@ -285,18 +283,14 @@ spec:
                 container('dind') {
                     sh '''
                         docker tag interviewhub-app:latest \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                            nexus-service.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
 
                         docker push \
-                            nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                            nexus-service.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
                     '''
                 }
             }
         }
-
-        /* --------------------------------------------------------------- */
-        /* ------------------ UPDATED STAGES FOR YOU ---------------------- */
-        /* --------------------------------------------------------------- */
 
         stage('Create Namespace') {
             steps {
