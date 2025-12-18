@@ -267,7 +267,7 @@ spec:
             steps {
                 container('dind') {
                     withCredentials([usernamePassword(
-                        credentialsId: 'nexus-cred-2401054',
+                        credentialsId: 'nexus-cred',
                         usernameVariable: 'NEXUS_USER',
                         passwordVariable: 'NEXUS_PASS'
                     )]) {
