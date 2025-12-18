@@ -265,30 +265,25 @@ spec:
         }
 
         stage('Login to Nexus Registry') {
-            steps {
-                container('dind') {
-                    sh '''
-                        echo "Logging into Nexus..."
-                        docker login ${REGISTRY} -u student -p Imcc@2025
-                    '''
-                }
-            }
+             steps {
+                 container('dind') {
+                     sh '''
+                         docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
+                     '''
+                 }
+             }
+         }
+
+         stage('Push to Nexus') {
+             steps {
+                 container('dind') {
+                     sh '''
+                         docker tag interviewhub-app:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                     '''
+                 }
+             }
         }
-
-        stage('Push to Nexus') {
-            steps {
-                container('dind') {
-                    sh '''
-                        docker tag interviewhub-app:latest \
-                            ${REGISTRY}/2401054/interviewhub:v1
-
-                        docker push \
-                            ${REGISTRY}/2401054/interviewhub:v1
-                    '''
-                }
-            }
-        }
-
         stage('Create Namespace') {
             steps {
                 container('kubectl') {
