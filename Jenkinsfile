@@ -130,26 +130,26 @@ spec:
         //          }
         //      }
         //  }
-         stage('Login to Nexus (HTTP)') {
-      steps {
+        stage('Login to Nexus Registry') {
+    steps {
         container('dind') {
-          sh '''
-            echo "Logging into Nexus over HTTP"
-            echo "Changeme@2025" | docker login http://${REGISTRY_URL} \
-              -u admin \
-              --password-stdin
-          '''
+            sh '''
+                echo "Logging into Nexus over HTTP"
+                echo "Changeme@2025" | docker login \
+                  nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                  -u admin --password-stdin
+            '''
         }
-      }
     }
+}
 
 
          stage('Push to Nexus') {
              steps {
                  container('dind') {
                      sh '''
-                         docker tag interviewhub-app:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
-                         docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                        docker tag interviewhub-app:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
                      '''
                  }
              }

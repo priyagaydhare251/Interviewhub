@@ -2,11 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: interviewhub-deployment
-  namespace: 2401054               # <--- Added Namespace
-  labels:
-    app: interviewhub
+  namespace: "2401054"
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: interviewhub
@@ -15,23 +13,11 @@ spec:
       labels:
         app: interviewhub
     spec:
+      imagePullSecrets:
+        - name: nexus-secret
       containers:
-        - name: interviewhub-container
-          image: interviewhub-app:latest     # <--- Your Docker image
-          imagePullPolicy: IfNotPresent
+        - name: interviewhub
+          image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
           ports:
-            - name: http
-              containerPort: 3000            # Next.js default port
-          envFrom:
-            - secretRef:
-                name: interviewhub-secret    # <--- Secret (optional)
-            - configMapRef:
-                name: interviewhub-config    # <--- ConfigMap (optional)
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "250m"
-              memory: "256Mi"
-      restartPolicy: Always
+            - containerPort: 3000
+          # Env variables will be set from Jenkins pipeline (kubectl set env)
