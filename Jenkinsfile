@@ -80,7 +80,7 @@ spec:
             steps {
                 container('dind') {
                     withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-cred',
+                        credentialsId: '2401054-docker-cred',
                         usernameVariable: 'USER',
                         passwordVariable: 'PASS'
                     )]) {
