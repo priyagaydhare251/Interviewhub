@@ -34,7 +34,7 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2"]
+    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"]
     securityContext:
       privileged: true
     env:
@@ -108,6 +108,11 @@ spec:
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                         sh '''
+                            echo "--- DEBUG START ---"
+                            env | grep -i proxy || true
+                            curl -v http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000/api/v2/analysis/version || true
+                            echo "--- DEBUG END ---"
+                            
                             sonar-scanner \
                                 -Dsonar.token=$SONAR_TOKEN \
                                 -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000
@@ -120,30 +125,7 @@ spec:
         /* ====================================
            REQUIRED FIX — Insecure Registry
            ==================================== */
-        stage('Configure Docker for Nexus HTTP Registry') {
-            steps {
-                container('dind') {
-                    sh '''
-                        echo "Restarting Docker daemon WITH insecure registry enabled..."
-
-                        # kill existing dockerd (if any)
-                        pkill dockerd || true
-
-                        # restart dockerd with HTTP registry support
-                        dockerd \
-                          --host=unix:///var/run/docker.sock \
-                          --storage-driver=overlay2 \
-                          --insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                          > /var/log/dockerd.log 2>&1 &
-
-                        # wait for docker to fully start
-                        sleep 8
-
-                        echo "Docker daemon restarted successfully with insecure registry."
-                    '''
-                }
-            }
-        }
+        /* Stage 'Configure Docker for Nexus HTTP Registry' removed - configured in podTemplate */
 
         stage('Login to Nexus Registry') {
             steps {
