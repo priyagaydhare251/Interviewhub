@@ -72,10 +72,6 @@ spec:
             }
         }
 
-        /* =============================================
-           NEW: LOGIN TO DOCKER HUB TO AVOID 429 ERROR
-        ============================================== */
-
         stage('Docker Hub Login') {
             steps {
                 container('dind') {
@@ -121,45 +117,65 @@ spec:
             }
         }
 
-        // stage('Login to Nexus Registry') {
-        //      steps {
-        //          container('dind') {
-        //              sh '''
-        //                  docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
-        //              '''
-        //          }
-        //      }
-        //  }
-        stage('Login to Nexus Registry') {
-    steps {
-        container('dind') {
-            sh '''
-                echo "Logging into Nexus over HTTP"
-                echo "Changeme@2025" | docker login \
-                  nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                  -u admin --password-stdin
-            '''
-        }
-    }
+        /* ===========================
+           REQUIRED FIX STARTS HERE
+           =========================== */
+        stage('Configure Docker for Nexus HTTP Registry') {
+            steps {
+                container('dind') {
+                    sh '''
+                        echo "Configuring Docker daemon for insecure Nexus registry..."
+
+                        mkdir -p /etc/docker
+
+                        cat <<EOF > /etc/docker/daemon.json
+{
+  "insecure-registries": [
+    "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+  ]
 }
+EOF
 
+                        echo "Restarting Docker daemon..."
+                        pkill dockerd || true
+                        dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay2 &
+                        sleep 6
+                    '''
+                }
+            }
+        }
+        /* ===========================
+           REQUIRED FIX ENDS HERE
+           =========================== */
 
-         stage('Push to Nexus') {
-             steps {
-                 container('dind') {
-                     sh '''
+        stage('Login to Nexus Registry') {
+            steps {
+                container('dind') {
+                    sh '''
+                        echo "Logging into Nexus over HTTP"
+                        echo "Changeme@2025" | docker login \
+                          nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                          -u admin --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push to Nexus') {
+            steps {
+                container('dind') {
+                    sh '''
                         docker tag interviewhub-app:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
                         docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
-                     '''
-                 }
-             }
+                    '''
+                }
+            }
         }
 
         stage('Create Namespace') {
             steps {
                 container('kubectl') {
                     sh '''
-                        echo "Ensuring namespace 2401054 exists..."
                         kubectl get namespace 2401054 || kubectl create namespace 2401054
                     '''
                 }
@@ -170,12 +186,9 @@ spec:
             steps {
                 container('kubectl') {
                     sh '''
-                        echo "Deploying to Kubernetes Namespace: 2401054"
-
                         kubectl apply -f k8s/deployment.yaml -n 2401054
                         kubectl apply -f k8s/service.yaml -n 2401054
 
-                        echo "Resources in namespace 2401054:"
                         kubectl get all -n 2401054
                     '''
                 }
@@ -186,16 +199,8 @@ spec:
             steps {
                 container('kubectl') {
                     sh '''
-                        echo "===== Kubernetes Nodes ====="
                         kubectl get nodes -o wide
-
-                        echo ""
-                        echo "===== Services in namespace 2401054 ====="
                         kubectl get svc -n 2401054
-
-                        echo ""
-                        echo "If service shows NodePort, open:"
-                        echo "http://<NODE-IP>:<NODEPORT>"
                     '''
                 }
             }
