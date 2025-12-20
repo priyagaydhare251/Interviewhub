@@ -121,15 +121,28 @@ spec:
             }
         }
 
-        stage('Login to Nexus Registry') {
-             steps {
-                 container('dind') {
-                     sh '''
-                         docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
-                     '''
-                 }
-             }
-         }
+        // stage('Login to Nexus Registry') {
+        //      steps {
+        //          container('dind') {
+        //              sh '''
+        //                  docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
+        //              '''
+        //          }
+        //      }
+        //  }
+         stage('Login to Nexus (HTTP)') {
+      steps {
+        container('dind') {
+          sh '''
+            echo "Logging into Nexus over HTTP"
+            echo "Changeme@2025" | docker login http://${REGISTRY_URL} \
+              -u admin \
+              --password-stdin
+          '''
+        }
+      }
+    }
+
 
          stage('Push to Nexus') {
              steps {
