@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: interviewhub-2401054.imcc.com   # Your app domain
+    - host: 2401054.imcc.com   # Your app domain
       http:
         paths:
           - path: /
