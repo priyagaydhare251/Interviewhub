@@ -117,42 +117,39 @@ spec:
             }
         }
 
-        /* ===========================
-           REQUIRED FIX STARTS HERE
-           =========================== */
+        /* ====================================
+           REQUIRED FIX — Insecure Registry
+           ==================================== */
         stage('Configure Docker for Nexus HTTP Registry') {
             steps {
                 container('dind') {
                     sh '''
-                        echo "Configuring Docker daemon for insecure Nexus registry..."
+                        echo "Restarting Docker daemon WITH insecure registry enabled..."
 
-                        mkdir -p /etc/docker
-
-                        cat <<EOF > /etc/docker/daemon.json
-{
-  "insecure-registries": [
-    "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-  ]
-}
-EOF
-
-                        echo "Restarting Docker daemon..."
+                        # kill existing dockerd (if any)
                         pkill dockerd || true
-                        dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay2 &
-                        sleep 6
+
+                        # restart dockerd with HTTP registry support
+                        dockerd \
+                          --host=unix:///var/run/docker.sock \
+                          --storage-driver=overlay2 \
+                          --insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                          > /var/log/dockerd.log 2>&1 &
+
+                        # wait for docker to fully start
+                        sleep 8
+
+                        echo "Docker daemon restarted successfully with insecure registry."
                     '''
                 }
             }
         }
-        /* ===========================
-           REQUIRED FIX ENDS HERE
-           =========================== */
 
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
                     sh '''
-                        echo "Logging into Nexus over HTTP"
+                        echo "Logging into Nexus (HTTP registry)"
                         echo "Changeme@2025" | docker login \
                           nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
                           -u admin --password-stdin
