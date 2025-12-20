@@ -20,4 +20,14 @@ spec:
           image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401054/interviewhub:v1
           ports:
             - containerPort: 3000
-          # Env variables will be set from Jenkins pipeline (kubectl set env)
+          env:
+            - name: STREAM_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: STREAM_SECRET_KEY
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: CLERK_SECRET_KEY

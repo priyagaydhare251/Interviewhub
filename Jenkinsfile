@@ -173,6 +173,14 @@ spec:
                             -n 2401054 \
                             --dry-run=client -o yaml | kubectl apply -f -
 
+                        # Create app secrets (STREAM_SECRET_KEY, CLERK_SECRET_KEY)
+                        # NOTE: In a real env, these should come from Jenkins credentials!
+                        kubectl create secret generic app-secrets \
+                            --from-literal=STREAM_SECRET_KEY='hjehtzpwzf6mfsf9n9xp3k55fxh6vz6y6eh8hq4j769fxkqrkshfzce6p2sz7cfk' \
+                            --from-literal=CLERK_SECRET_KEY='sk_test_HwXgYXy2f5BwGJlQDViXhUael5Nd4HqHES38APQDfm' \
+                            -n 2401054 \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
                         kubectl apply -f k8s/deployment.yaml -n 2401054
                         kubectl apply -f k8s/service.yaml -n 2401054
                         kubectl apply -f k8s/ingress.yaml -n 2401054
